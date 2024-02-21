@@ -79,5 +79,6 @@ export async function requestFaucetForAddress(addr: string): Promise<bool> {
   let response = await axios.get(
     "http://localhost:5000/faucet?address=" + addr
   );
+  await new Promise((r) => setTimeout(r, 500));
   return response.data.success;
 }

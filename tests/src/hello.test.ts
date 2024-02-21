@@ -39,10 +39,15 @@ describe("Hello World", () => {
     console.log(address);
     expect(address).to.be.not.eq("");
   });
-  
+
   it("Can request faucet", async () => {
     let randomWallet = new Wallet();
     let address = randomWallet.address;
-    let success = await requestFaucetForAddress(address);
-    expect(success).to.be.true;
+    await requestFaucetForAddress(address);
+    let balance = await client.query.bank.balance({
+      address: address,
+      denom: "uscrt",
+    });
+    expect(parseInt(balance.balance.amount)).to.be.gte(1000 * 1e6);
+  });
 });
