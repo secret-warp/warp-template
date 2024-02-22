@@ -3,6 +3,22 @@ import * as fs from "fs";
 import CryptoJS from "crypto-js";
 import axios from "axios";
 
+export async function ensureChainIsReady(
+  client: SecretNetworkClient
+): Promise<void> {
+  while (true) {
+    // ensure the chain is ready
+    let pushToContinue = false;
+    await client.query.compute.codes({}).catch((e) => {
+      if (e.message.includes("connection refused")) {
+        console.log("Waiting for the chain to start...");
+        pushToContinue = true;
+      }
+    });
+    if (pushToContinue) continue;
+    break;
+  }
+}
 export function getLocalSecretConnection(wallet?: Wallet): SecretNetworkClient {
   let client = new SecretNetworkClient({
     url: "http://localhost:1317",
@@ -44,7 +60,7 @@ export async function storeAndInitContract(
       source: "",
       builder: "",
     },
-    { gasLimit: 1000000 }
+    { gasLimit: 1000000, broadcastCheckIntervalMs: 600 }
   );
   const codeId = Number(
     storeTx.arrayLog.find(
@@ -66,6 +82,7 @@ export async function storeAndInitContract(
     },
     {
       gasLimit: 200_000,
+      broadcastCheckIntervalMs: 600,
     }
   );
 
@@ -75,7 +92,7 @@ export async function storeAndInitContract(
   return contractAddress;
 }
 
-export async function requestFaucetForAddress(addr: string): Promise<bool> {
+export async function requestFaucetForAddress(addr: string): Promise<boolean> {
   let response = await axios.get(
     "http://localhost:5000/faucet?address=" + addr
   );

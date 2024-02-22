@@ -1,17 +1,19 @@
 import { expect } from "chai";
 import { SecretNetworkClient, Wallet } from "secretjs";
 import {
+  ensureChainIsReady,
   getGenesisWallets,
   getLocalSecretConnection,
   requestFaucetForAddress,
   storeAndInitContract,
 } from "./utils/localsecret";
 
-describe("Hello World", () => {
+describe("Basic tests", () => {
   let client: SecretNetworkClient;
 
-  before(() => {
+  before(async () => {
     client = getLocalSecretConnection();
+    await ensureChainIsReady(client);
   });
 
   it("Can get current block height", async () => {
